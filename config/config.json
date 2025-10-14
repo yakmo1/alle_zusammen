@@ -1,0 +1,72 @@
+{
+    "database": {
+        "local": {
+            "host": "localhost",
+            "port": 5432,
+            "database": "trading_db",
+            "user": "mt5user",
+            "password": "1234",
+            "pool_size": 5,
+            "max_overflow": 10
+        },
+        "remote": {
+            "host": "212.132.105.198",
+            "port": 5432,
+            "database": "postgres",
+            "user": "mt5user",
+            "password": "1234",
+            "pool_size": 3,
+            "max_overflow": 5
+        },
+        "active": "local"
+    },
+    "data": {
+        "symbols": ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD"],
+        "bar_types": ["5s", "1m", "5m", "15m", "1h", "4h", "1d"],
+        "history_days": 30,
+        "tick_storage_days": 7,
+        "bar_aggregation_interval": 5
+    },
+    "trading": {
+        "base_timeframe": "1m",
+        "timeframes": ["1m", "5m", "15m", "1h", "4h", "1d"],
+        "horizons": [30, 60, 180, 300, 600],
+        "horizon_labels": ["30s", "60s", "3min", "5min", "10min"],
+        "min_confidence": 0.6,
+        "pip_value": 0.0001,
+        "min_profit_pips": 3,
+        "risk_per_trade": 0.02,
+        "max_position_size": 1.0,
+        "max_daily_loss": 0.05,
+        "max_concurrent_trades": 5,
+        "trading_hours": "24/5",
+        "enable_auto_trading": true
+    },
+    "modeling": {
+        "features": {
+            "price": ["close", "high", "low", "open", "volume"],
+            "indicators": [
+                "sma_10", "sma_20", "sma_50",
+                "rsi_14", "macd_12_26_9",
+                "bbands_20_2", "atr_14"
+            ]
+        },
+        "active_algorithms": ["xgboost", "lightgbm"],
+        "version": "v1.0.0"
+    },
+    "monitoring": {
+        "health_check_interval": 300,
+        "max_errors_per_hour": 10,
+        "error_recovery_time": 60
+    },
+    "mt5": {
+        "path": "C:/Program Files/Admirals Group MT5 Terminal/terminal64.exe",
+        "login": 42771818,
+        "password": "i6K44O&6A6j%Ec",
+        "server": "admiralsgroup-demo",
+        "timeout": 60000,
+        "enable_auto_reconnect": true,
+        "max_reconnect_attempts": 5
+    },
+    "locale": "German"
+}

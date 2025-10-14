@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - Alerts{% endblock %}
+
+{% block content %}
+<div class="grid grid-3">
+    <div class="card">
+        <div class="card-header">Alert Summary</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Critical:</strong> <span class="badge badge-danger" id="critical-count">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Warnings:</strong> <span class="badge badge-warning" id="warning-count">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Info:</strong> <span class="badge badge-info" id="info-count">0</span>
+            </div>
+            <div>
+                <strong>Total Today:</strong> <span id="total-alerts">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Alert Settings</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="email-alerts" checked style="margin-right: 10px;">
+                    Email Notifications
+                </label>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="sound-alerts" checked style="margin-right: 10px;">
+                    Sound Alerts
+                </label>
+            </div>
+            <div>
+                <label style="display: flex; align-items: center;">
+                    <input type="checkbox" id="popup-alerts" checked style="margin-right: 10px;">
+                    Popup Alerts
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Quick Actions</div>
+        <div class="card-body">
+            <button class="btn" onclick="acknowledgeAll()" style="width: 100%; margin-bottom: 10px;">Acknowledge All</button>
+            <button class="btn" onclick="clearResolved()" style="width: 100%; margin-bottom: 10px;">Clear Resolved</button>
+            <button class="btn" onclick="exportAlerts()" style="width: 100%;">Export Alerts</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Active Alerts</div>
+    <div class="card-body">
+        <table id="alerts-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Level</th>
+                    <th>Category</th>
+                    <th>Message</th>
+                    <th>Source</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="active-alerts">
+                <tr>
+                    <td colspan="7" style="text-align: center; opacity: 0.6;">No active alerts</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Alert History (Last 100)</div>
+    <div class="card-body">
+        <div style="margin-bottom: 15px;">
+            <select id="history-filter" style="background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                <option value="all">All Levels</option>
+                <option value="critical">Critical Only</option>
+                <option value="warning">Warnings Only</option>
+                <option value="info">Info Only</option>
+            </select>
+            <select id="category-filter" style="background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit; margin-left: 10px;">
+                <option value="all">All Categories</option>
+                <option value="trading">Trading</option>
+                <option value="system">System</option>
+                <option value="ml">ML</option>
+                <option value="connection">Connection</option>
+            </select>
+        </div>
+        <table id="history-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Level</th>
+                    <th>Category</th>
+                    <th>Message</th>
+                    <th>Source</th>
+                    <th>Resolved</th>
+                </tr>
+            </thead>
+            <tbody id="alert-history">
+                <tr>
+                    <td colspan="6" style="text-align: center; opacity: 0.6;">Loading alert history...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">Alert Frequency (Last 24h)</div>
+        <div class="card-body" id="alert-frequency">
+            <p style="opacity: 0.6; text-align: center;">Loading alert frequency data...</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Top Alert Sources</div>
+        <div class="card-body" id="alert-sources">
+            <p style="opacity: 0.6; text-align: center;">Loading alert sources...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    // Update alert summary
+    socket.on('alert_summary_update', (data) => {
+        document.getElementById('critical-count').textContent = data.critical || 0;
+        document.getElementById('warning-count').textContent = data.warnings || 0;
+        document.getElementById('info-count').textContent = data.info || 0;
+        document.getElementById('total-alerts').textContent = data.total || 0;
+    });
+
+    // Update active alerts
+    socket.on('active_alerts_update', (data) => {
+        if (data.alerts && data.alerts.length > 0) {
+            const tbody = document.getElementById('active-alerts');
+            tbody.innerHTML = data.alerts.map(alert => {
+                let levelBadge = '';
+                if (alert.level === 'critical') {
+                    levelBadge = '<span class="badge badge-danger">CRITICAL</span>';
+                } else if (alert.level === 'warning') {
+                    levelBadge = '<span class="badge badge-warning">WARNING</span>';
+                } else {
+                    levelBadge = '<span class="badge badge-info">INFO</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${alert.timestamp}</td>
+                        <td>${levelBadge}</td>
+                        <td>${alert.category}</td>
+                        <td>${alert.message}</td>
+                        <td>${alert.source}</td>
+                        <td><span class="badge badge-${alert.acknowledged ? 'success' : 'warning'}">${alert.acknowledged ? 'Acknowledged' : 'New'}</span></td>
+                        <td>
+                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="acknowledgeAlert('${alert.id}')">ACK</button>
+                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem; margin-left: 5px;" onclick="resolveAlert('${alert.id}')">Resolve</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            document.getElementById('active-alerts').innerHTML = '<tr><td colspan="7" style="text-align: center; opacity: 0.6;">No active alerts</td></tr>';
+        }
+    });
+
+    // Update alert history
+    socket.on('alert_history_update', (data) => {
+        if (data.history && data.history.length > 0) {
+            const tbody = document.getElementById('alert-history');
+            tbody.innerHTML = data.history.map(alert => {
+                let levelBadge = '';
+                if (alert.level === 'critical') {
+                    levelBadge = '<span class="badge badge-danger">CRITICAL</span>';
+                } else if (alert.level === 'warning') {
+                    levelBadge = '<span class="badge badge-warning">WARNING</span>';
+                } else {
+                    levelBadge = '<span class="badge badge-info">INFO</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${alert.timestamp}</td>
+                        <td>${levelBadge}</td>
+                        <td>${alert.category}</td>
+                        <td>${alert.message}</td>
+                        <td>${alert.source}</td>
+                        <td>${alert.resolved ? 'Yes' : 'No'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
+
+    // Update alert frequency
+    socket.on('alert_frequency_update', (data) => {
+        if (data.frequency && data.frequency.length > 0) {
+            const container = document.getElementById('alert-frequency');
+            const maxCount = Math.max(...data.frequency.map(f => f.count));
+
+            container.innerHTML = data.frequency.map(item => {
+                const barWidth = (item.count / maxCount * 100).toFixed(0);
+                return `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                            <span>${item.hour}:00</span>
+                            <span style="color: var(--matrix-primary);">${item.count} alerts</span>
+                        </div>
+                        <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--matrix-primary); width: ${barWidth}%; height: 100%; box-shadow: 0 0 10px var(--matrix-primary);"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    });
+
+    // Update alert sources
+    socket.on('alert_sources_update', (data) => {
+        if (data.sources && data.sources.length > 0) {
+            const container = document.getElementById('alert-sources');
+            container.innerHTML = data.sources.map((source, idx) => `
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>${idx + 1}. ${source.name}</strong>
+                        <span style="color: var(--matrix-primary);">${source.count} alerts</span>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 0.85rem; opacity: 0.8;">
+                        Critical: ${source.critical} | Warnings: ${source.warnings}
+                    </div>
+                </div>
+            `).join('');
+        }
+    });
+
+    // Action functions
+    function acknowledgeAlert(id) {
+        socket.emit('acknowledge_alert', { alert_id: id });
+    }
+
+    function resolveAlert(id) {
+        socket.emit('resolve_alert', { alert_id: id });
+    }
+
+    function acknowledgeAll() {
+        if (confirm('Acknowledge all active alerts?')) {
+            socket.emit('acknowledge_all_alerts');
+        }
+    }
+
+    function clearResolved() {
+        if (confirm('Clear all resolved alerts from history?')) {
+            socket.emit('clear_resolved_alerts');
+        }
+    }
+
+    function exportAlerts() {
+        socket.emit('export_alerts');
+        alert('Alert export requested. Check the exports folder.');
+    }
+
+    // Filter event listeners
+    document.getElementById('history-filter').addEventListener('change', function() {
+        socket.emit('filter_alert_history', {
+            level: this.value,
+            category: document.getElementById('category-filter').value
+        });
+    });
+
+    document.getElementById('category-filter').addEventListener('change', function() {
+        socket.emit('filter_alert_history', {
+            level: document.getElementById('history-filter').value,
+            category: this.value
+        });
+    });
+
+    // Alert settings
+    document.getElementById('email-alerts').addEventListener('change', function() {
+        socket.emit('update_alert_settings', { email: this.checked });
+    });
+
+    document.getElementById('sound-alerts').addEventListener('change', function() {
+        socket.emit('update_alert_settings', { sound: this.checked });
+    });
+
+    document.getElementById('popup-alerts').addEventListener('change', function() {
+        socket.emit('update_alert_settings', { popup: this.checked });
+    });
+
+    // Request initial data
+    socket.emit('request_alerts_update');
+
+    // Auto-refresh every 5 seconds
+    setInterval(() => {
+        socket.emit('request_alerts_update');
+    }, 5000);
+
+    // Play sound on new critical alert
+    socket.on('new_critical_alert', (data) => {
+        if (document.getElementById('sound-alerts').checked) {
+            // Simple beep using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        if (document.getElementById('popup-alerts').checked) {
+            alert('CRITICAL ALERT: ' + data.message);
+        }
+    });
+</script>
+{% endblock %}

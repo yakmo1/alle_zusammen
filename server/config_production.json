@@ -1,0 +1,76 @@
+{
+  "environment": "production",
+  "server_type": "windows_server_2012",
+  "description": "24/7 Data Collection & Trading Server",
+
+  "services": {
+    "tick_collector_v2": {
+      "enabled": true,
+      "priority": 1,
+      "description": "Collects live tick data from MT5",
+      "restart_on_failure": true,
+      "max_restart_attempts": 5
+    },
+    "bar_aggregator_v2": {
+      "enabled": true,
+      "priority": 2,
+      "description": "Aggregates ticks into OHLC bars",
+      "restart_on_failure": true,
+      "max_restart_attempts": 5
+    },
+    "signal_generator": {
+      "enabled": true,
+      "priority": 3,
+      "description": "Generates trading signals from ML models",
+      "restart_on_failure": true,
+      "max_restart_attempts": 5,
+      "paper_trading_mode": true
+    },
+    "dashboard": {
+      "enabled": false,
+      "priority": 4,
+      "description": "Web dashboard (optional on server)",
+      "restart_on_failure": false
+    }
+  },
+
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "trading_db",
+    "pool_size": 10,
+    "backup_enabled": true,
+    "backup_interval_hours": 24
+  },
+
+  "monitoring": {
+    "health_check_interval_seconds": 60,
+    "log_rotation_days": 30,
+    "disk_space_warning_gb": 10,
+    "memory_warning_percent": 80
+  },
+
+  "alerts": {
+    "email_enabled": false,
+    "email_recipients": [],
+    "telegram_enabled": false,
+    "telegram_chat_id": "",
+    "alert_on_service_failure": true,
+    "alert_on_data_gap": true,
+    "alert_on_disk_space_low": true
+  },
+
+  "trading": {
+    "paper_trading": true,
+    "max_daily_loss_usd": 500,
+    "max_positions": 3,
+    "max_positions_per_symbol": 1,
+    "symbols": ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD"]
+  },
+
+  "performance": {
+    "tick_buffer_size": 1000,
+    "bar_aggregation_interval_seconds": 30,
+    "signal_generation_interval_seconds": 60
+  }
+}

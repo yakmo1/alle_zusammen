@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - ML System{% endblock %}
+
+{% block content %}
+<div class="grid grid-3">
+    <div class="card">
+        <div class="card-header">Model Status</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Active Models:</strong> <span id="active-models">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Last Training:</strong> <span id="last-training">Never</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Avg Accuracy:</strong> <span id="avg-accuracy">0%</span>
+            </div>
+            <div>
+                <strong>Status:</strong> <span class="badge badge-success" id="ml-status">Active</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Inference Stats</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Today's Predictions:</strong> <span id="today-predictions">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Avg Confidence:</strong> <span id="avg-confidence">0%</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Signal Accuracy:</strong> <span id="signal-accuracy">0%</span>
+            </div>
+            <div>
+                <strong>Avg Inference Time:</strong> <span id="inference-time">0ms</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Feature Quality</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Feature Coverage:</strong> <span id="feature-coverage">0%</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Missing Values:</strong> <span id="missing-values">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Data Quality:</strong> <span class="badge badge-success" id="data-quality">Good</span>
+            </div>
+            <div>
+                <strong>Last Update:</strong> <span id="last-update">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Model Performance by Symbol</div>
+    <div class="card-body">
+        <table id="model-performance-table">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>Model Type</th>
+                    <th>Accuracy</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1 Score</th>
+                    <th>Last Training</th>
+                    <th>Predictions (24h)</th>
+                </tr>
+            </thead>
+            <tbody id="model-performance">
+                <tr>
+                    <td colspan="8" style="text-align: center; opacity: 0.6;">Loading model performance data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Current Predictions</div>
+    <div class="card-body">
+        <table id="predictions-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Symbol</th>
+                    <th>Direction</th>
+                    <th>Confidence</th>
+                    <th>Expected Move</th>
+                    <th>Time Horizon</th>
+                    <th>Features Used</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="current-predictions">
+                <tr>
+                    <td colspan="8" style="text-align: center; opacity: 0.6;">No current predictions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">Feature Importance (Top 10)</div>
+        <div class="card-body" id="feature-importance">
+            <p style="opacity: 0.6; text-align: center;">Loading feature importance...</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Training History</div>
+        <div class="card-body" id="training-history">
+            <p style="opacity: 0.6; text-align: center;">Loading training history...</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Actions</div>
+    <div class="card-body">
+        <button class="btn" onclick="triggerTraining()">Trigger Model Training</button>
+        <button class="btn" style="margin-left: 10px;" onclick="refreshPredictions()">Refresh Predictions</button>
+        <button class="btn" style="margin-left: 10px;" onclick="exportModelMetrics()">Export Metrics</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    // Update model status
+    socket.on('ml_status_update', (data) => {
+        document.getElementById('active-models').textContent = data.active_models || 0;
+        document.getElementById('last-training').textContent = data.last_training || 'Never';
+        document.getElementById('avg-accuracy').textContent = (data.avg_accuracy || 0).toFixed(1) + '%';
+
+        const statusBadge = document.getElementById('ml-status');
+        statusBadge.textContent = data.status || 'Unknown';
+        statusBadge.className = `badge badge-${data.status === 'Active' ? 'success' : 'warning'}`;
+    });
+
+    // Update inference stats
+    socket.on('inference_stats_update', (data) => {
+        document.getElementById('today-predictions').textContent = data.today_predictions || 0;
+        document.getElementById('avg-confidence').textContent = (data.avg_confidence || 0).toFixed(1) + '%';
+        document.getElementById('signal-accuracy').textContent = (data.signal_accuracy || 0).toFixed(1) + '%';
+        document.getElementById('inference-time').textContent = (data.inference_time || 0).toFixed(1) + 'ms';
+    });
+
+    // Update feature quality
+    socket.on('feature_quality_update', (data) => {
+        document.getElementById('feature-coverage').textContent = (data.coverage || 0).toFixed(1) + '%';
+        document.getElementById('missing-values').textContent = data.missing_values || 0;
+        document.getElementById('last-update').textContent = data.last_update || '-';
+
+        const qualityBadge = document.getElementById('data-quality');
+        qualityBadge.textContent = data.quality || 'Unknown';
+        const badgeClass = data.quality === 'Good' ? 'success' : data.quality === 'Fair' ? 'warning' : 'danger';
+        qualityBadge.className = `badge badge-${badgeClass}`;
+    });
+
+    // Update model performance
+    socket.on('model_performance_update', (data) => {
+        if (data.models && data.models.length > 0) {
+            const tbody = document.getElementById('model-performance');
+            tbody.innerHTML = data.models.map(model => `
+                <tr>
+                    <td>${model.symbol}</td>
+                    <td>${model.model_type}</td>
+                    <td>${(model.accuracy * 100).toFixed(1)}%</td>
+                    <td>${(model.precision * 100).toFixed(1)}%</td>
+                    <td>${(model.recall * 100).toFixed(1)}%</td>
+                    <td>${(model.f1_score * 100).toFixed(1)}%</td>
+                    <td>${model.last_training}</td>
+                    <td>${model.predictions_24h}</td>
+                </tr>
+            `).join('');
+        }
+    });
+
+    // Update predictions
+    socket.on('predictions_update', (data) => {
+        if (data.predictions && data.predictions.length > 0) {
+            const tbody = document.getElementById('current-predictions');
+            tbody.innerHTML = data.predictions.map(pred => `
+                <tr>
+                    <td>${pred.timestamp}</td>
+                    <td>${pred.symbol}</td>
+                    <td><span class="badge badge-${pred.direction === 'BUY' ? 'success' : 'danger'}">${pred.direction}</span></td>
+                    <td>${(pred.confidence * 100).toFixed(1)}%</td>
+                    <td>${pred.expected_move}</td>
+                    <td>${pred.time_horizon}</td>
+                    <td>${pred.features_used}</td>
+                    <td><span class="badge badge-info">${pred.status}</span></td>
+                </tr>
+            `).join('');
+        } else {
+            document.getElementById('current-predictions').innerHTML = '<tr><td colspan="8" style="text-align: center; opacity: 0.6;">No current predictions</td></tr>';
+        }
+    });
+
+    // Update feature importance
+    socket.on('feature_importance_update', (data) => {
+        if (data.features && data.features.length > 0) {
+            const container = document.getElementById('feature-importance');
+            container.innerHTML = data.features.map((feat, idx) => {
+                const barWidth = (feat.importance * 100).toFixed(0);
+                return `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                            <span>${feat.name}</span>
+                            <span style="color: var(--matrix-primary);">${(feat.importance * 100).toFixed(1)}%</span>
+                        </div>
+                        <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--matrix-primary); width: ${barWidth}%; height: 100%; box-shadow: 0 0 10px var(--matrix-primary);"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    });
+
+    // Update training history
+    socket.on('training_history_update', (data) => {
+        if (data.history && data.history.length > 0) {
+            const container = document.getElementById('training-history');
+            container.innerHTML = data.history.map(entry => `
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                    <div><strong>${entry.symbol}</strong> - ${entry.timestamp}</div>
+                    <div style="margin-top: 5px;">
+                        Accuracy: <span style="color: var(--matrix-primary);">${(entry.accuracy * 100).toFixed(1)}%</span> |
+                        Duration: ${entry.duration}
+                    </div>
+                </div>
+            `).join('');
+        }
+    });
+
+    // Action functions
+    function triggerTraining() {
+        socket.emit('trigger_training');
+        alert('Model training triggered! This may take several minutes.');
+    }
+
+    function refreshPredictions() {
+        socket.emit('request_ml_update');
+    }
+
+    function exportModelMetrics() {
+        socket.emit('export_metrics');
+        alert('Model metrics export requested. Check the exports folder.');
+    }
+
+    // Request initial data
+    socket.emit('request_ml_update');
+
+    // Auto-refresh every 10 seconds
+    setInterval(() => {
+        socket.emit('request_ml_update');
+    }, 10000);
+</script>
+{% endblock %}

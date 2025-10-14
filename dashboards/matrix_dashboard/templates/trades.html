@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - Trades{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">Open Positions</div>
+    <div class="card-body">
+        <table id="open-positions-table">
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Symbol</th>
+                    <th>Type</th>
+                    <th>Volume</th>
+                    <th>Open Price</th>
+                    <th>Current Price</th>
+                    <th>S/L</th>
+                    <th>T/P</th>
+                    <th>Profit</th>
+                    <th>Open Time</th>
+                </tr>
+            </thead>
+            <tbody id="open-positions">
+                <tr>
+                    <td colspan="10" style="text-align: center; opacity: 0.6;">No open positions</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Trade History (Last 50)</div>
+    <div class="card-body">
+        <table id="trade-history-table">
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Symbol</th>
+                    <th>Type</th>
+                    <th>Volume</th>
+                    <th>Open Price</th>
+                    <th>Close Price</th>
+                    <th>S/L</th>
+                    <th>T/P</th>
+                    <th>Profit</th>
+                    <th>Open Time</th>
+                    <th>Close Time</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody id="trade-history">
+                <tr>
+                    <td colspan="12" style="text-align: center; opacity: 0.6;">Loading trade history...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    <div class="card">
+        <div class="card-header">Statistics</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Total Trades:</strong> <span id="total-trades">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Win Rate:</strong> <span id="win-rate">0%</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Avg Win:</strong> <span id="avg-win" style="color: var(--matrix-primary);">$0.00</span>
+            </div>
+            <div>
+                <strong>Avg Loss:</strong> <span id="avg-loss" style="color: #ff3232;">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Daily Performance</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Today's P&L:</strong> <span id="today-pnl">$0.00</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>This Week:</strong> <span id="week-pnl">$0.00</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>This Month:</strong> <span id="month-pnl">$0.00</span>
+            </div>
+            <div>
+                <strong>Total P&L:</strong> <span id="total-pnl">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Risk Metrics</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Max Drawdown:</strong> <span id="max-drawdown">0%</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Sharpe Ratio:</strong> <span id="sharpe-ratio">0.00</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Profit Factor:</strong> <span id="profit-factor">0.00</span>
+            </div>
+            <div>
+                <strong>Avg Hold Time:</strong> <span id="avg-hold-time">0h 0m</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    function formatProfit(profit) {
+        const color = profit >= 0 ? 'var(--matrix-primary)' : '#ff3232';
+        return `<span style="color: ${color}; font-weight: bold;">$${profit.toFixed(2)}</span>`;
+    }
+
+    function formatDuration(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        return `${hours}h ${minutes}m`;
+    }
+
+    // Update open positions
+    socket.on('open_positions_update', (data) => {
+        if (data.positions && data.positions.length > 0) {
+            const tbody = document.getElementById('open-positions');
+            tbody.innerHTML = data.positions.map(pos => `
+                <tr>
+                    <td>${pos.ticket}</td>
+                    <td>${pos.symbol}</td>
+                    <td><span class="badge badge-${pos.type === 'BUY' ? 'success' : 'danger'}">${pos.type}</span></td>
+                    <td>${pos.volume}</td>
+                    <td>${pos.open_price}</td>
+                    <td>${pos.current_price}</td>
+                    <td>${pos.sl || '-'}</td>
+                    <td>${pos.tp || '-'}</td>
+                    <td>${formatProfit(pos.profit)}</td>
+                    <td>${pos.open_time}</td>
+                </tr>
+            `).join('');
+        } else {
+            document.getElementById('open-positions').innerHTML = '<tr><td colspan="10" style="text-align: center; opacity: 0.6;">No open positions</td></tr>';
+        }
+    });
+
+    // Update trade history
+    socket.on('trade_history_update', (data) => {
+        if (data.trades && data.trades.length > 0) {
+            const tbody = document.getElementById('trade-history');
+            tbody.innerHTML = data.trades.map(trade => `
+                <tr>
+                    <td>${trade.ticket}</td>
+                    <td>${trade.symbol}</td>
+                    <td><span class="badge badge-${trade.type === 'BUY' ? 'success' : 'danger'}">${trade.type}</span></td>
+                    <td>${trade.volume}</td>
+                    <td>${trade.open_price}</td>
+                    <td>${trade.close_price}</td>
+                    <td>${trade.sl || '-'}</td>
+                    <td>${trade.tp || '-'}</td>
+                    <td>${formatProfit(trade.profit)}</td>
+                    <td>${trade.open_time}</td>
+                    <td>${trade.close_time}</td>
+                    <td>${formatDuration(trade.duration)}</td>
+                </tr>
+            `).join('');
+        }
+    });
+
+    // Update statistics
+    socket.on('trade_stats_update', (data) => {
+        document.getElementById('total-trades').textContent = data.total_trades || 0;
+        document.getElementById('win-rate').textContent = (data.win_rate || 0).toFixed(1) + '%';
+        document.getElementById('avg-win').textContent = '$' + (data.avg_win || 0).toFixed(2);
+        document.getElementById('avg-loss').textContent = '$' + (data.avg_loss || 0).toFixed(2);
+
+        // Performance
+        const formatPnl = (value) => {
+            const color = value >= 0 ? 'var(--matrix-primary)' : '#ff3232';
+            return `<span style="color: ${color};">$${value.toFixed(2)}</span>`;
+        };
+
+        document.getElementById('today-pnl').innerHTML = formatPnl(data.today_pnl || 0);
+        document.getElementById('week-pnl').innerHTML = formatPnl(data.week_pnl || 0);
+        document.getElementById('month-pnl').innerHTML = formatPnl(data.month_pnl || 0);
+        document.getElementById('total-pnl').innerHTML = formatPnl(data.total_pnl || 0);
+
+        // Risk metrics
+        document.getElementById('max-drawdown').textContent = (data.max_drawdown || 0).toFixed(2) + '%';
+        document.getElementById('sharpe-ratio').textContent = (data.sharpe_ratio || 0).toFixed(2);
+        document.getElementById('profit-factor').textContent = (data.profit_factor || 0).toFixed(2);
+        document.getElementById('avg-hold-time').textContent = formatDuration(data.avg_hold_time || 0);
+    });
+
+    // Request initial data
+    socket.emit('request_trades_update');
+
+    // Auto-refresh every 5 seconds
+    setInterval(() => {
+        socket.emit('request_trades_update');
+    }, 5000);
+</script>
+{% endblock %}

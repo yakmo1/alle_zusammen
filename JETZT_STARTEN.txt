@@ -1,0 +1,187 @@
+================================================================================
+  TRADING SYSTEM UNIFIED - JETZT STARTEN
+================================================================================
+
+Datum: 2025-10-12
+Status: Foundation Complete, Ready for Testing
+
+================================================================================
+  SCHNELLSTART FÜR FIREFOX-TEST
+================================================================================
+
+SCHRITT 1: PostgreSQL starten
+------------------------------
+1. Windows-Taste drücken
+2. "services.msc" eingeben
+3. Suche "postgresql"
+4. Rechtsklick → "Starten" (falls nicht läuft)
+
+SCHRITT 2: MT5 starten und einloggen
+-------------------------------------
+1. MetaTrader 5 öffnen
+2. Falls nicht eingeloggt:
+   - Datei → Mit Handelskonto anmelden
+   - Server: admiralsgroup-demo
+   - Login: 42771818
+   - Passwort: i6K44O&6A6j%Ec
+3. Warten bis grüner Indikator unten rechts
+
+SCHRITT 3: PowerShell als Administrator
+----------------------------------------
+1. Windows-Taste + X
+2. "Windows PowerShell (Administrator)" wählen
+3. Navigieren:
+   cd C:\Projects\alle_zusammen\trading_system_unified
+
+SCHRITT 4: System-Check
+------------------------
+python scripts\system_health_check.py
+
+→ Alle [OK]? → Weiter zu Schritt 5
+→ [CRITICAL] Fehler? → Siehe ANLEITUNG.md
+
+
+SCHRITT 5A: NUR DASHBOARD TESTEN (Empfohlen zuerst!)
+------------------------------------------------------
+python dashboards\matrix_dashboard\unified_master_dashboard.py
+
+→ Dashboard läuft auf: http://localhost:5000
+→ Firefox öffnen und URL eingeben
+→ F12 drücken für Developer Tools
+→ Bei Fehlern: Screenshot machen!
+
+ODER
+
+SCHRITT 5B: KOMPLETTES SYSTEM STARTEN
+--------------------------------------
+python scripts\start_system.py
+
+→ Startet alle Komponenten
+→ Dashboard: http://localhost:5000
+→ Zum Stoppen: Strg + C
+
+
+================================================================================
+  WAS ZU ERWARTEN IST
+================================================================================
+
+Im Dashboard sollten Sie sehen:
+- Matrix-Stil Interface
+- Trading-Übersicht
+- Live Daten (falls Tick Collector läuft)
+- System-Status
+- Aktuelle Kurse
+
+Falls KEINE Daten angezeigt werden:
+→ Normal! Tick Collector wurde noch nicht gestartet
+→ Lösung: Separates PowerShell-Fenster öffnen:
+   python src\data\tick_collector.py
+
+
+================================================================================
+  HÄUFIGE FEHLER UND LÖSUNGEN
+================================================================================
+
+FEHLER: "Database connection failed"
+LÖSUNG:
+  1. PostgreSQL läuft? (siehe Schritt 1)
+  2. Datenbank existiert?
+     python scripts\init_database.py --db local
+
+FEHLER: "MT5 initialization failed"
+LÖSUNG:
+  1. MT5 läuft? (siehe Schritt 2)
+  2. In MT5 eingeloggt?
+  3. MT5_PATH in .env korrekt?
+
+FEHLER: "No module named 'xxx'"
+LÖSUNG:
+  .\venv\Scripts\activate
+  pip install -r requirements.txt
+
+FEHLER: "Port 5000 already in use"
+LÖSUNG:
+  Anderer Prozess blockiert Port
+  1. netstat -ano | findstr :5000
+  2. taskkill /PID <PID> /F
+
+
+================================================================================
+  EMPFOHLENE REIHENFOLGE FÜR ERSTEN TEST
+================================================================================
+
+1. System Health Check
+   python scripts\system_health_check.py
+
+2. Datenbank initialisieren (falls nötig)
+   python scripts\init_database.py --db local
+
+3. MT5 Connection testen
+   python scripts\test_mt5_connection.py
+
+4. Tick Collector testen (30 Sekunden)
+   python src\data\tick_collector.py
+
+5. Bar Builder testen (1 Minute)
+   python src\data\bar_builder.py
+
+6. Dashboard starten
+   python dashboards\matrix_dashboard\unified_master_dashboard.py
+   → Firefox: http://localhost:5000
+
+7. Bei Erfolg: Komplettes System
+   python scripts\start_system.py
+
+
+================================================================================
+  FIREFOX DEVELOPER TOOLS (F12)
+================================================================================
+
+Bei Problemen im Dashboard:
+
+1. F12 drücken in Firefox
+2. Tab "Konsole" → Suche nach roten Fehlern
+3. Tab "Netzwerk" → Prüfe HTTP-Requests
+4. Screenshot machen von Fehlern
+5. PowerShell-Output auch checken
+
+
+================================================================================
+  WICHTIGE DATEIEN
+================================================================================
+
+ANLEITUNG.md              → Detaillierte Schritt-für-Schritt Anleitung
+START_HERE.bat            → Automatisches Start-Script
+STATUS.md                 → Aktueller Projekt-Status
+docs/DEPLOYMENT_GUIDE.md  → Vollständige Deployment-Anleitung
+
+
+================================================================================
+  NÄCHSTE SCHRITTE NACH ERFOLGREICHEM TEST
+================================================================================
+
+1. ML System integrieren (aus autotrading_10)
+2. Trading Engine integrieren (aus automation)
+3. Backtesting
+4. Paper Trading
+5. Live Trading (mit Vorsicht!)
+
+
+================================================================================
+  KONTAKT / SUPPORT
+================================================================================
+
+Bei technischen Problemen:
+1. Logs prüfen: logs\trading_system.log
+2. Health Check: python scripts\system_health_check.py
+3. Screenshots von Fehlern erstellen
+
+
+================================================================================
+
+Version: 1.0.0-alpha
+Letztes Update: 2025-10-12
+
+VIEL ERFOLG! 🚀
+
+================================================================================

@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - System Health{% endblock %}
+
+{% block content %}
+<div class="grid grid-3">
+    <div class="card">
+        <div class="card-header">System Overview</div>
+        <div class="card-body">
+            <div class="stat-box">
+                <div class="stat-value" id="overall-status">HEALTHY</div>
+                <div class="stat-label">Overall Status</div>
+            </div>
+            <div style="margin-top: 20px; text-align: left;">
+                <div style="margin-bottom: 10px;">
+                    <strong>Uptime:</strong> <span id="uptime">0h 0m</span>
+                </div>
+                <div>
+                    <strong>Last Check:</strong> <span id="last-check">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">CPU & Memory</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>CPU Usage:</strong> <span id="cpu-usage">0%</span>
+                <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden;">
+                    <div id="cpu-bar" style="background: var(--matrix-primary); width: 0%; height: 100%; box-shadow: 0 0 10px var(--matrix-primary); transition: width 0.3s;"></div>
+                </div>
+            </div>
+            <div>
+                <strong>Memory Usage:</strong> <span id="memory-usage">0%</span>
+                <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px; margin-top: 5px; overflow: hidden;">
+                    <div id="memory-bar" style="background: var(--matrix-primary); width: 0%; height: 100%; box-shadow: 0 0 10px var(--matrix-primary); transition: width 0.3s;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Disk & Network</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Disk Usage:</strong> <span id="disk-usage">0%</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Network In:</strong> <span id="network-in">0 KB/s</span>
+            </div>
+            <div>
+                <strong>Network Out:</strong> <span id="network-out">0 KB/s</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Component Status</div>
+    <div class="card-body">
+        <table id="component-status-table">
+            <thead>
+                <tr>
+                    <th>Component</th>
+                    <th>Status</th>
+                    <th>Last Check</th>
+                    <th>Response Time</th>
+                    <th>Messages</th>
+                </tr>
+            </thead>
+            <tbody id="component-status">
+                <tr>
+                    <td colspan="5" style="text-align: center; opacity: 0.6;">Loading component status...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">Database Health</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>PostgreSQL:</strong> <span class="badge badge-success" id="postgres-status">Connected</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Active Connections:</strong> <span id="db-connections">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Query Time (Avg):</strong> <span id="query-time">0ms</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Database Size:</strong> <span id="db-size">0 MB</span>
+            </div>
+            <div>
+                <strong>Tables:</strong> <span id="table-count">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">MT5 Connection</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Status:</strong> <span class="badge badge-success" id="mt5-connection">Connected</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Account:</strong> <span id="mt5-account">-</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Server:</strong> <span id="mt5-server">-</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Ping:</strong> <span id="mt5-ping">0ms</span>
+            </div>
+            <div>
+                <strong>Last Quote:</strong> <span id="last-quote">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">System Logs (Last 50)</div>
+    <div class="card-body">
+        <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 4px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+            <div id="system-logs">
+                <div style="opacity: 0.6;">Loading system logs...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Actions</div>
+    <div class="card-body">
+        <button class="btn" onclick="runHealthCheck()">Run Health Check</button>
+        <button class="btn" style="margin-left: 10px;" onclick="clearLogs()">Clear Logs</button>
+        <button class="btn" style="margin-left: 10px;" onclick="exportSystemReport()">Export Report</button>
+        <button class="btn" style="margin-left: 10px;" onclick="restartComponents()">Restart Components</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    // Update system overview
+    socket.on('system_status_update', (data) => {
+        const statusElement = document.getElementById('overall-status');
+        statusElement.textContent = data.overall_status || 'UNKNOWN';
+
+        const statusColors = {
+            'HEALTHY': 'var(--matrix-primary)',
+            'WARNING': '#ffb400',
+            'CRITICAL': '#ff3232'
+        };
+        statusElement.style.color = statusColors[data.overall_status] || '#ffffff';
+
+        document.getElementById('uptime').textContent = data.uptime || '0h 0m';
+        document.getElementById('last-check').textContent = data.last_check || '-';
+    });
+
+    // Update resource usage
+    socket.on('resource_usage_update', (data) => {
+        // CPU
+        const cpuUsage = data.cpu_usage || 0;
+        document.getElementById('cpu-usage').textContent = cpuUsage.toFixed(1) + '%';
+        document.getElementById('cpu-bar').style.width = cpuUsage + '%';
+
+        // Memory
+        const memUsage = data.memory_usage || 0;
+        document.getElementById('memory-usage').textContent = memUsage.toFixed(1) + '%';
+        document.getElementById('memory-bar').style.width = memUsage + '%';
+
+        // Disk & Network
+        document.getElementById('disk-usage').textContent = (data.disk_usage || 0).toFixed(1) + '%';
+        document.getElementById('network-in').textContent = (data.network_in || 0).toFixed(1) + ' KB/s';
+        document.getElementById('network-out').textContent = (data.network_out || 0).toFixed(1) + ' KB/s';
+    });
+
+    // Update component status
+    socket.on('component_status_update', (data) => {
+        if (data.components && data.components.length > 0) {
+            const tbody = document.getElementById('component-status');
+            tbody.innerHTML = data.components.map(comp => {
+                let statusBadge = '';
+                if (comp.status === 'OK') {
+                    statusBadge = '<span class="badge badge-success">OK</span>';
+                } else if (comp.status === 'WARNING') {
+                    statusBadge = '<span class="badge badge-warning">WARNING</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-danger">ERROR</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${comp.name}</td>
+                        <td>${statusBadge}</td>
+                        <td>${comp.last_check}</td>
+                        <td>${comp.response_time}ms</td>
+                        <td>${comp.message || '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
+
+    // Update database health
+    socket.on('database_health_update', (data) => {
+        const statusBadge = document.getElementById('postgres-status');
+        statusBadge.textContent = data.connected ? 'Connected' : 'Disconnected';
+        statusBadge.className = data.connected ? 'badge badge-success' : 'badge badge-danger';
+
+        document.getElementById('db-connections').textContent = data.active_connections || 0;
+        document.getElementById('query-time').textContent = (data.avg_query_time || 0).toFixed(1) + 'ms';
+        document.getElementById('db-size').textContent = (data.db_size_mb || 0).toFixed(1) + ' MB';
+        document.getElementById('table-count').textContent = data.table_count || 0;
+    });
+
+    // Update MT5 connection
+    socket.on('mt5_connection_update', (data) => {
+        const statusBadge = document.getElementById('mt5-connection');
+        statusBadge.textContent = data.connected ? 'Connected' : 'Disconnected';
+        statusBadge.className = data.connected ? 'badge badge-success' : 'badge badge-danger';
+
+        document.getElementById('mt5-account').textContent = data.account || '-';
+        document.getElementById('mt5-server').textContent = data.server || '-';
+        document.getElementById('mt5-ping').textContent = (data.ping || 0) + 'ms';
+        document.getElementById('last-quote').textContent = data.last_quote || '-';
+    });
+
+    // Update system logs
+    socket.on('system_logs_update', (data) => {
+        if (data.logs && data.logs.length > 0) {
+            const container = document.getElementById('system-logs');
+            container.innerHTML = data.logs.map(log => {
+                let color = '#ffffff';
+                if (log.level === 'ERROR' || log.level === 'CRITICAL') color = '#ff3232';
+                else if (log.level === 'WARNING') color = '#ffb400';
+                else if (log.level === 'INFO') color = 'var(--matrix-primary)';
+
+                return `<div style="margin-bottom: 5px; color: ${color};">[${log.timestamp}] [${log.level}] ${log.message}</div>`;
+            }).join('');
+
+            // Auto-scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+    });
+
+    // Action functions
+    function runHealthCheck() {
+        socket.emit('run_health_check');
+        alert('Running health check...');
+    }
+
+    function clearLogs() {
+        if (confirm('Are you sure you want to clear all logs?')) {
+            socket.emit('clear_logs');
+        }
+    }
+
+    function exportSystemReport() {
+        socket.emit('export_system_report');
+        alert('System report export requested. Check the exports folder.');
+    }
+
+    function restartComponents() {
+        if (confirm('Are you sure you want to restart all components?')) {
+            socket.emit('restart_components');
+        }
+    }
+
+    // Request initial data
+    socket.emit('request_system_update');
+
+    // Auto-refresh every 3 seconds
+    setInterval(() => {
+        socket.emit('request_system_update');
+    }, 3000);
+</script>
+{% endblock %}
