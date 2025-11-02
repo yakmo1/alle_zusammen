@@ -1,0 +1,78 @@
+{
+  "mcpVersion": "2024-11-05",
+  "servers": {
+    "firefox-automation": {
+      "command": "node",
+      "args": ["C:\\Projects\\alle_zusammen\\build\\index.js"],
+      "description": "Firefox Browser Automation MCP Server - Provides comprehensive browser control for AI assistants",
+      "icon": "🌐",
+      "env": {
+        "FIREFOX_HEADLESS": "true",
+        "MCP_DEBUG": "false"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": false,
+        "prompts": false
+      },
+      "metadata": {
+        "version": "0.1.0",
+        "author": "MCP Firefox Server",
+        "homepage": "https://github.com/modelcontextprotocol/servers",
+        "license": "MIT",
+        "keywords": ["firefox", "browser", "automation", "webdriver", "selenium"],
+        "categories": ["web-automation", "browser-control", "data-extraction"]
+      },
+      "tools": [
+        {
+          "name": "firefox_navigate",
+          "description": "Navigate to a URL in Firefox"
+        },
+        {
+          "name": "firefox_screenshot",
+          "description": "Take a screenshot of the current page"
+        },
+        {
+          "name": "firefox_get_text",
+          "description": "Extract text content from the page"
+        },
+        {
+          "name": "firefox_click",
+          "description": "Click on page elements"
+        },
+        {
+          "name": "firefox_type",
+          "description": "Type text into input fields"
+        },
+        {
+          "name": "firefox_get_links",
+          "description": "Extract all links from the page"
+        },
+        {
+          "name": "firefox_open_tab",
+          "description": "Open a new browser tab"
+        },
+        {
+          "name": "firefox_close_tab",
+          "description": "Close current or specific tab"
+        },
+        {
+          "name": "firefox_switch_tab",
+          "description": "Switch between browser tabs"
+        },
+        {
+          "name": "firefox_execute_js",
+          "description": "Execute JavaScript code in the browser"
+        }
+      ]
+    }
+  },
+  "clientConfig": {
+    "timeout": 30000,
+    "retries": 3,
+    "logging": {
+      "level": "info",
+      "file": "logs/mcp-client.log"
+    }
+  }
+}

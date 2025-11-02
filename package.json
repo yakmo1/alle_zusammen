@@ -1,0 +1,69 @@
+{
+  "name": "mcp-firefox-server",
+  "version": "0.1.0",
+  "description": "MCP Server for Firefox browser automation and control",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "mcp-firefox-server": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "start": "node build/index.js",
+    "start:global": "node global-service.js start",
+    "stop:global": "node global-service.js stop",
+    "status:global": "node global-service.js status",
+    "install:global": "powershell -ExecutionPolicy Bypass -File install-global-mcp.ps1",
+    "inspect": "npx @modelcontextprotocol/inspector node build/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "firefox",
+    "browser-automation",
+    "webdriver",
+    "selenium",
+    "ai",
+    "llm"
+  ],
+  "author": "MCP Firefox Server Developer",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "selenium-webdriver": "^4.15.0",
+    "geckodriver": "^4.4.4",
+    "zod": "^3.22.4",
+    "ws": "^8.17.1",
+    "sharp": "^0.33.5",
+    "cheerio": "^1.0.0-rc.12",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/selenium-webdriver": "^4.1.20",
+    "@types/ws": "^8.5.10",
+    "@types/jest": "^29.5.8",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourname/mcp-firefox-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourname/mcp-firefox-server/issues"
+  },
+  "homepage": "https://github.com/yourname/mcp-firefox-server#readme"
+}
