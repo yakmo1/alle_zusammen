@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - Optimization{% endblock %}
+
+{% block content %}
+<div class="grid grid-3">
+    <div class="card">
+        <div class="card-header">Optimization Status</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Active Jobs:</strong> <span id="active-jobs">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Completed:</strong> <span id="completed-jobs">0</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Success Rate:</strong> <span id="success-rate">0%</span>
+            </div>
+            <div>
+                <strong>Status:</strong> <span class="badge badge-info" id="optimization-status">Idle</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Best Parameters</div>
+        <div class="card-body">
+            <div style="margin-bottom: 15px;">
+                <strong>Best Sharpe:</strong> <span id="best-sharpe" style="color: var(--matrix-primary);">0.00</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Best Profit Factor:</strong> <span id="best-pf" style="color: var(--matrix-primary);">0.00</span>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <strong>Best Win Rate:</strong> <span id="best-winrate">0%</span>
+            </div>
+            <div>
+                <strong>Last Optimization:</strong> <span id="last-optimization">Never</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Quick Optimize</div>
+        <div class="card-body">
+            <select id="optimize-symbol" style="width: 100%; margin-bottom: 10px; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                <option value="EURUSD">EURUSD</option>
+                <option value="GBPUSD">GBPUSD</option>
+                <option value="USDJPY">USDJPY</option>
+                <option value="AUDUSD">AUDUSD</option>
+            </select>
+            <button class="btn" onclick="startOptimization()" style="width: 100%;">Start Optimization</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Optimization Jobs</div>
+    <div class="card-body">
+        <table id="optimization-jobs-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Symbol</th>
+                    <th>Strategy</th>
+                    <th>Status</th>
+                    <th>Progress</th>
+                    <th>Best Metric</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="optimization-jobs">
+                <tr>
+                    <td colspan="9" style="text-align: center; opacity: 0.6;">No optimization jobs</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Parameter Space Configuration</div>
+    <div class="card-body">
+        <div class="grid grid-2">
+            <div>
+                <h4 style="color: var(--matrix-primary); margin-bottom: 15px;">Strategy Parameters</h4>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Stop Loss (pips)</label>
+                    <input type="text" id="sl-range" placeholder="10-50" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Take Profit (pips)</label>
+                    <input type="text" id="tp-range" placeholder="20-100" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Position Size (%)</label>
+                    <input type="text" id="size-range" placeholder="1-5" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                </div>
+            </div>
+            <div>
+                <h4 style="color: var(--matrix-primary); margin-bottom: 15px;">ML Parameters</h4>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Confidence Threshold</label>
+                    <input type="text" id="confidence-range" placeholder="0.6-0.9" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Lookback Period (bars)</label>
+                    <input type="text" id="lookback-range" placeholder="50-200" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px;">Feature Set</label>
+                    <select id="feature-set" style="width: 100%; background: rgba(0, 255, 65, 0.1); color: var(--overlay-text); border: 1px solid var(--matrix-primary); padding: 8px; border-radius: 4px; font-family: inherit;">
+                        <option value="basic">Basic</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="all">All Features</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn" onclick="saveParameters()">Save Parameters</button>
+            <button class="btn" style="margin-left: 10px;" onclick="loadDefaults()">Load Defaults</button>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">Optimization Results</div>
+        <div class="card-body" id="optimization-results">
+            <p style="opacity: 0.6; text-align: center;">No optimization results available</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Parameter Importance</div>
+        <div class="card-body" id="parameter-importance">
+            <p style="opacity: 0.6; text-align: center;">Run optimization to see parameter importance</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Backtest Comparison</div>
+    <div class="card-body">
+        <table id="backtest-comparison-table">
+            <thead>
+                <tr>
+                    <th>Config ID</th>
+                    <th>Symbol</th>
+                    <th>Period</th>
+                    <th>Total Trades</th>
+                    <th>Win Rate</th>
+                    <th>Profit</th>
+                    <th>Sharpe</th>
+                    <th>Max DD</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="backtest-comparison">
+                <tr>
+                    <td colspan="9" style="text-align: center; opacity: 0.6;">No backtest results</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    // Update optimization status
+    socket.on('optimization_status_update', (data) => {
+        document.getElementById('active-jobs').textContent = data.active_jobs || 0;
+        document.getElementById('completed-jobs').textContent = data.completed_jobs || 0;
+        document.getElementById('success-rate').textContent = (data.success_rate || 0).toFixed(1) + '%';
+
+        const statusBadge = document.getElementById('optimization-status');
+        statusBadge.textContent = data.status || 'Idle';
+        const badgeClass = data.status === 'Running' ? 'warning' : data.status === 'Completed' ? 'success' : 'info';
+        statusBadge.className = `badge badge-${badgeClass}`;
+    });
+
+    // Update best parameters
+    socket.on('best_parameters_update', (data) => {
+        document.getElementById('best-sharpe').textContent = (data.best_sharpe || 0).toFixed(2);
+        document.getElementById('best-pf').textContent = (data.best_profit_factor || 0).toFixed(2);
+        document.getElementById('best-winrate').textContent = (data.best_winrate || 0).toFixed(1) + '%';
+        document.getElementById('last-optimization').textContent = data.last_optimization || 'Never';
+    });
+
+    // Update optimization jobs
+    socket.on('optimization_jobs_update', (data) => {
+        if (data.jobs && data.jobs.length > 0) {
+            const tbody = document.getElementById('optimization-jobs');
+            tbody.innerHTML = data.jobs.map(job => {
+                let statusBadge = '';
+                if (job.status === 'Running') {
+                    statusBadge = '<span class="badge badge-warning">Running</span>';
+                } else if (job.status === 'Completed') {
+                    statusBadge = '<span class="badge badge-success">Completed</span>';
+                } else if (job.status === 'Failed') {
+                    statusBadge = '<span class="badge badge-danger">Failed</span>';
+                } else {
+                    statusBadge = '<span class="badge badge-info">Pending</span>';
+                }
+
+                return `
+                    <tr>
+                        <td>${job.id}</td>
+                        <td>${job.symbol}</td>
+                        <td>${job.strategy}</td>
+                        <td>${statusBadge}</td>
+                        <td>${job.progress}%</td>
+                        <td>${job.best_metric}</td>
+                        <td>${job.started}</td>
+                        <td>${job.duration}</td>
+                        <td>
+                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="viewResults('${job.id}')">View</button>
+                            ${job.status === 'Running' ? `<button class="btn" style="padding: 4px 10px; font-size: 0.8rem; margin-left: 5px;" onclick="stopJob('${job.id}')">Stop</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            document.getElementById('optimization-jobs').innerHTML = '<tr><td colspan="9" style="text-align: center; opacity: 0.6;">No optimization jobs</td></tr>';
+        }
+    });
+
+    // Update optimization results
+    socket.on('optimization_results_update', (data) => {
+        if (data.results && data.results.length > 0) {
+            const container = document.getElementById('optimization-results');
+            container.innerHTML = data.results.map((result, idx) => `
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>#${idx + 1} ${result.symbol}</strong>
+                        <span style="color: var(--matrix-primary);">Sharpe: ${result.sharpe.toFixed(2)}</span>
+                    </div>
+                    <div style="margin-top: 5px; font-size: 0.85rem;">
+                        SL: ${result.sl} | TP: ${result.tp} | Conf: ${result.confidence} | Win Rate: ${result.winrate.toFixed(1)}%
+                    </div>
+                </div>
+            `).join('');
+        }
+    });
+
+    // Update parameter importance
+    socket.on('parameter_importance_update', (data) => {
+        if (data.importance && data.importance.length > 0) {
+            const container = document.getElementById('parameter-importance');
+            const maxImportance = Math.max(...data.importance.map(p => p.value));
+
+            container.innerHTML = data.importance.map(param => {
+                const barWidth = (param.value / maxImportance * 100).toFixed(0);
+                return `
+                    <div style="margin-bottom: 10px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 3px;">
+                            <span>${param.name}</span>
+                            <span style="color: var(--matrix-primary);">${(param.value * 100).toFixed(1)}%</span>
+                        </div>
+                        <div style="background: rgba(0, 0, 0, 0.3); height: 8px; border-radius: 4px; overflow: hidden;">
+                            <div style="background: var(--matrix-primary); width: ${barWidth}%; height: 100%; box-shadow: 0 0 10px var(--matrix-primary);"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    });
+
+    // Update backtest comparison
+    socket.on('backtest_comparison_update', (data) => {
+        if (data.backtests && data.backtests.length > 0) {
+            const tbody = document.getElementById('backtest-comparison');
+            tbody.innerHTML = data.backtests.map(bt => {
+                const profitColor = bt.profit >= 0 ? 'var(--matrix-primary)' : '#ff3232';
+                return `
+                    <tr>
+                        <td>${bt.config_id}</td>
+                        <td>${bt.symbol}</td>
+                        <td>${bt.period}</td>
+                        <td>${bt.total_trades}</td>
+                        <td>${bt.win_rate.toFixed(1)}%</td>
+                        <td style="color: ${profitColor}; font-weight: bold;">$${bt.profit.toFixed(2)}</td>
+                        <td>${bt.sharpe.toFixed(2)}</td>
+                        <td>${bt.max_dd.toFixed(2)}%</td>
+                        <td>
+                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem;" onclick="loadConfig('${bt.config_id}')">Load</button>
+                            <button class="btn" style="padding: 4px 10px; font-size: 0.8rem; margin-left: 5px;" onclick="compareConfig('${bt.config_id}')">Compare</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    });
+
+    // Action functions
+    function startOptimization() {
+        const symbol = document.getElementById('optimize-symbol').value;
+        socket.emit('start_optimization', {
+            symbol: symbol,
+            sl_range: document.getElementById('sl-range').value,
+            tp_range: document.getElementById('tp-range').value,
+            size_range: document.getElementById('size-range').value,
+            confidence_range: document.getElementById('confidence-range').value,
+            lookback_range: document.getElementById('lookback-range').value,
+            feature_set: document.getElementById('feature-set').value
+        });
+        alert('Optimization started for ' + symbol);
+    }
+
+    function viewResults(jobId) {
+        socket.emit('view_optimization_results', { job_id: jobId });
+    }
+
+    function stopJob(jobId) {
+        if (confirm('Stop optimization job #' + jobId + '?')) {
+            socket.emit('stop_optimization_job', { job_id: jobId });
+        }
+    }
+
+    function saveParameters() {
+        socket.emit('save_optimization_parameters', {
+            sl_range: document.getElementById('sl-range').value,
+            tp_range: document.getElementById('tp-range').value,
+            size_range: document.getElementById('size-range').value,
+            confidence_range: document.getElementById('confidence-range').value,
+            lookback_range: document.getElementById('lookback-range').value,
+            feature_set: document.getElementById('feature-set').value
+        });
+        alert('Parameters saved successfully!');
+    }
+
+    function loadDefaults() {
+        document.getElementById('sl-range').value = '10-50';
+        document.getElementById('tp-range').value = '20-100';
+        document.getElementById('size-range').value = '1-5';
+        document.getElementById('confidence-range').value = '0.6-0.9';
+        document.getElementById('lookback-range').value = '50-200';
+        document.getElementById('feature-set').value = 'advanced';
+    }
+
+    function loadConfig(configId) {
+        socket.emit('load_config', { config_id: configId });
+        alert('Configuration loaded: ' + configId);
+    }
+
+    function compareConfig(configId) {
+        socket.emit('compare_config', { config_id: configId });
+    }
+
+    // Request initial data
+    socket.emit('request_optimization_update');
+
+    // Auto-refresh every 10 seconds
+    setInterval(() => {
+        socket.emit('request_optimization_update');
+    }, 10000);
+</script>
+{% endblock %}

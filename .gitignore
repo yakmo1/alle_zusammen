@@ -19,16 +19,43 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+<<<<<<< HEAD
 venv/
 ENV/
 env/
 
 # IDEs
+=======
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Environment Variables
+.env
+.env.local
+.env.production
+*.env.backup
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+>>>>>>> 55fb7decba00f402fb26d25c8ae6df961e3718dd
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+<<<<<<< HEAD
 .DS_Store
 
 # Logs
@@ -69,3 +96,35 @@ test_*.py
 build/
 dist/
 *.exe
+=======
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model Files (zu groß für Git)
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pb
+
+# Data Files
+data/*.csv
+data/*.parquet
+data/raw/*
+data/processed/*
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+>>>>>>> 55fb7decba00f402fb26d25c8ae6df961e3718dd

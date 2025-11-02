@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Matrix Trading Dashboard{% endblock %}</title>
+
+    <!-- Matrix Rain CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/matrix.css') }}?v=3">
+
+    <!-- Custom Dashboard CSS -->
+    <style>
+        :root {
+            --matrix-bg: #050a08;
+            --matrix-primary: #00ff41;
+            --matrix-secondary: #00b359;
+            --matrix-fade: #002910;
+            --overlay-text: #d6ffe0;
+            --card-bg: rgba(15, 32, 23, 0.85);
+            --card-border: rgba(0, 255, 65, 0.3);
+            --font-stack: 'Courier New', Consolas, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            font-family: var(--font-stack);
+            background: var(--matrix-bg);
+            color: var(--overlay-text);
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            display: block;
+            z-index: 1;
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(5, 10, 8, 0.95);
+            border-bottom: 2px solid var(--matrix-primary);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--matrix-primary);
+            text-shadow: 0 0 10px var(--matrix-primary);
+            margin-right: 50px;
+            text-decoration: none;
+        }
+
+        .navbar-nav {
+            display: flex;
+            gap: 5px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            flex: 1;
+        }
+
+        .nav-link {
+            color: var(--overlay-text);
+            text-decoration: none;
+            padding: 8px 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 255, 65, 0.1);
+            border-color: var(--matrix-primary);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+        }
+
+        .nav-link.active {
+            background: rgba(0, 255, 65, 0.2);
+            border-color: var(--matrix-primary);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 60px;
+            padding: 30px;
+            min-height: calc(100vh - 60px);
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+
+        .card-header {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--matrix-primary);
+            text-shadow: 0 0 8px var(--matrix-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .card-body {
+            font-size: 0.95rem;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .badge-success {
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid var(--matrix-primary);
+            color: var(--matrix-primary);
+        }
+
+        .badge-warning {
+            background: rgba(255, 180, 0, 0.2);
+            border: 1px solid #ffb400;
+            color: #ffb400;
+        }
+
+        .badge-danger {
+            background: rgba(255, 50, 50, 0.2);
+            border: 1px solid #ff3232;
+            color: #ff3232;
+        }
+
+        .badge-info {
+            background: rgba(0, 179, 255, 0.2);
+            border: 1px solid #00b3ff;
+            color: #00b3ff;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-primary);
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            background: rgba(0, 255, 65, 0.1);
+            color: var(--matrix-primary);
+            border: 1px solid var(--matrix-primary);
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 65, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        /* Stats Display */
+        .stat-box {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--matrix-primary);
+            text-shadow: 0 0 10px var(--matrix-primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--overlay-text);
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--matrix-primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--matrix-secondary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+            }
+
+            .navbar-brand {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .navbar-nav {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-top: 120px;
+                padding: 15px;
+            }
+
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Matrix Rain Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">MATRIX TRADING</a>
+        <ul class="navbar-nav">
+            <li><a href="/" class="nav-link {% if request.path == '/' %}active{% endif %}">Dashboard</a></li>
+            <li><a href="/trades" class="nav-link {% if request.path == '/trades' %}active{% endif %}">Trades</a></li>
+            <li><a href="/ml" class="nav-link {% if request.path == '/ml' %}active{% endif %}">ML System</a></li>
+            <li><a href="/system" class="nav-link {% if request.path == '/system' %}active{% endif %}">System Health</a></li>
+            <li><a href="/alerts" class="nav-link {% if request.path == '/alerts' %}active{% endif %}">Alerts</a></li>
+            <li><a href="/optimization" class="nav-link {% if request.path == '/optimization' %}active{% endif %}">Optimization</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Matrix Rain Script -->
+    <script src="{{ url_for('static', filename='js/matrix.js') }}?v=2"></script>
+    <script>
+        // Initialize Matrix Rain
+        MatrixRain.init({
+            canvasId: 'matrix-canvas',
+            fontSize: 14,
+            density: 0.5,
+            glow: true,
+            speed: 0.4,
+            charset: 'アカサタナABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$€£¥',
+            tint: '#00ff41',
+            background: '#050a08'
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

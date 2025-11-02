@@ -1,0 +1,23 @@
+{
+  "dashboard": {
+    "port": 8000,
+    "update_interval": 5,
+    "max_log_entries": 1000
+  },
+  "mt5": {
+    "enabled": true,
+    "timeout": 30
+  },
+  "postgresql": {
+    "host": "localhost",
+    "port": 5432,
+    "database": "autotrading_system",
+    "user": "postgres",
+    "enabled": true
+  },
+  "alerts": {
+    "max_alerts": 100,
+    "email_enabled": false,
+    "telegram_enabled": false
+  }
+}

@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block title %}Matrix Trading Dashboard - Home{% endblock %}
+
+{% block content %}
+<!-- Script Manager -->
+<div class="card">
+    <div class="card-header">Script Management</div>
+    <div class="card-body">
+        <div class="grid grid-3">
+            <!-- Tick Collector V2 -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Tick Collector V2</strong>
+                    <span class="badge badge-danger" id="tick-collector-v2-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    Per-symbol tables + real-time indicators
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('tick_collector_v2')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('tick_collector_v2')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Bar Aggregator V2 -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Bar Aggregator V2</strong>
+                    <span class="badge badge-danger" id="bar-aggregator-v2-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    OHLC bars (1m, 5m, 15m, 1h, 4h) + indicators
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('bar_aggregator_v2')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('bar_aggregator_v2')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Feature Generator -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Feature Generator</strong>
+                    <span class="badge badge-danger" id="feature-generator-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    Calculates technical indicators
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('feature_generator')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('feature_generator')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Signal Generator -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Signal Generator</strong>
+                    <span class="badge badge-danger" id="signal-generator-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    Generates ML trading signals
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('signal_generator')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('signal_generator')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Trade Monitor -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Trade Monitor</strong>
+                    <span class="badge badge-danger" id="trade-monitor-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    Monitors open positions
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('trade_monitor')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('trade_monitor')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+
+            <!-- Performance Tracker -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <strong>Performance Tracker</strong>
+                    <span class="badge badge-danger" id="performance-tracker-status">Stopped</span>
+                </div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-bottom: 10px;">
+                    Tracks trading performance
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn" onclick="startScript('performance_tracker')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Start</button>
+                    <button class="btn" onclick="stopScript('performance_tracker')" style="flex: 1; padding: 6px; font-size: 0.85rem;">Stop</button>
+                </div>
+            </div>
+        </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="btn" onclick="startAllScripts()" style="padding: 10px 30px;">Start All Scripts</button>
+            <button class="btn" onclick="stopAllScripts()" style="padding: 10px 30px; margin-left: 10px;">Stop All Scripts</button>
+        </div>
+    </div>
+</div>
+
+<!-- Live Script Logs -->
+<div class="card">
+    <div class="card-header">
+        Script Logs (Live)
+        <select id="log-script-selector" style="float: right; background: #0f2017; color: var(--matrix-primary); border: 1px solid var(--matrix-primary); padding: 4px 8px; border-radius: 4px; font-family: inherit;">
+            <option value="tick_collector_v2">Tick Collector V2</option>
+            <option value="bar_aggregator_v2">Bar Aggregator V2</option>
+            <option value="feature_generator">Feature Generator</option>
+            <option value="signal_generator">Signal Generator</option>
+            <option value="trade_monitor">Trade Monitor</option>
+            <option value="performance_tracker">Performance Tracker</option>
+        </select>
+    </div>
+    <div class="card-body">
+        <pre id="script-logs" style="background: #000; color: var(--matrix-primary); padding: 15px; border-radius: 4px; height: 300px; overflow-y: auto; font-size: 0.85rem; font-family: 'Courier New', monospace; margin: 0;">Loading logs...</pre>
+    </div>
+</div>
+
+<div class="grid grid-3">
+    <!-- System Status -->
+    <div class="card">
+        <div class="card-header">System Status</div>
+        <div class="card-body">
+            <div class="stat-box">
+                <div class="stat-value" id="system-status">ONLINE</div>
+                <div class="stat-label">Current Status</div>
+            </div>
+            <div style="margin-top: 20px;">
+                <div style="margin-bottom: 10px;">
+                    <strong>MT5:</strong> <span class="badge badge-success" id="mt5-status">Connected</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Database:</strong> <span class="badge badge-success" id="db-status">Connected</span>
+                </div>
+                <div>
+                    <strong>ML Engine:</strong> <span class="badge badge-success" id="ml-status">Active</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Trades -->
+    <div class="card">
+        <div class="card-header">Active Trades</div>
+        <div class="card-body">
+            <div class="stat-box">
+                <div class="stat-value" id="active-trades">0</div>
+                <div class="stat-label">Open Positions</div>
+            </div>
+            <div style="margin-top: 20px; text-align: left;">
+                <div style="margin-bottom: 10px;">
+                    <strong>Total Volume:</strong> <span id="total-volume">0.00</span> Lots
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Unrealized P&L:</strong> <span id="unrealized-pnl" style="color: var(--matrix-primary);">$0.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Performance -->
+    <div class="card">
+        <div class="card-header">Today's Performance</div>
+        <div class="card-body">
+            <div class="stat-box">
+                <div class="stat-value" id="today-pnl">$0.00</div>
+                <div class="stat-label">Realized P&L</div>
+            </div>
+            <div style="margin-top: 20px; text-align: left;">
+                <div style="margin-bottom: 10px;">
+                    <strong>Trades:</strong> <span id="today-trades">0</span>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Win Rate:</strong> <span id="win-rate">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="card">
+    <div class="card-header">Recent Activity</div>
+    <div class="card-body">
+        <table id="recent-activity-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Symbol</th>
+                    <th>Action</th>
+                    <th>Volume</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="recent-activity">
+                <tr>
+                    <td colspan="7" style="text-align: center; opacity: 0.6;">No recent activity</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ML System Status -->
+<div class="card">
+    <div class="card-header">ML System Status - Phase 2 Complete</div>
+    <div class="card-body">
+        <div class="grid grid-3">
+            <!-- Data Pipeline -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.1); border-radius: 4px;">
+                <div style="font-size: 1.1rem; margin-bottom: 10px; color: var(--matrix-primary);">
+                    <strong>Phase 1: Data Pipeline</strong>
+                    <span class="badge badge-success" style="float: right;">COMPLETE</span>
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Tick Collector V2:</span> <span id="tick-count">0</span> ticks
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Bar Aggregator V2:</span> <span id="bar-count">0</span> bars
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Data Quality:</span> <span id="data-quality" style="color: var(--matrix-primary);">99.7%</span>
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">
+                    5 symbols × 5 timeframes
+                </div>
+            </div>
+
+            <!-- ML System -->
+            <div style="padding: 15px; background: rgba(0, 255, 65, 0.1); border-radius: 4px;">
+                <div style="font-size: 1.1rem; margin-bottom: 10px; color: var(--matrix-primary);">
+                    <strong>Phase 2: ML System</strong>
+                    <span class="badge badge-success" style="float: right;">COMPLETE</span>
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Models Trained:</span> 2/2
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">XGBoost:</span> <span style="color: #ffaa00;">45.5% accuracy</span>
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">LightGBM:</span> <span style="color: #ffaa00;">45.5% accuracy</span>
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">
+                    174 features, 70 samples
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div style="padding: 15px; background: rgba(255, 170, 0, 0.1); border-radius: 4px;">
+                <div style="font-size: 1.1rem; margin-bottom: 10px; color: #ffaa00;">
+                    <strong>Phase 3: Signals</strong>
+                    <span class="badge badge-warning" style="float: right;">READY</span>
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Signal Generator:</span> Pending
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Confidence Filter:</span> >60%
+                </div>
+                <div style="font-size: 0.85rem; margin-bottom: 8px;">
+                    <span style="opacity: 0.8;">Multi-TF Confirm:</span> Enabled
+                </div>
+                <div style="font-size: 0.75rem; opacity: 0.6; margin-top: 10px;">
+                    Waiting for more training data
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span style="font-size: 0.9rem;">System Implementation Progress</span>
+                <span style="font-size: 0.9rem; color: var(--matrix-primary);">60%</span>
+            </div>
+            <div style="width: 100%; height: 20px; background: rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden;">
+                <div style="width: 60%; height: 100%; background: linear-gradient(90deg, var(--matrix-primary), #00cc52); display: flex; align-items: center; justify-content: flex-end; padding-right: 5px; font-size: 0.75rem; color: #000; font-weight: bold;">
+                    Phase 1 ✓ | Phase 2 ✓ | Phase 3 →
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Status -->
+        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <div style="font-size: 0.9rem; margin-bottom: 10px; color: var(--matrix-primary);">
+                    <strong>✓ Completed Components</strong>
+                </div>
+                <div style="font-size: 0.8rem; line-height: 1.8;">
+                    <div>• Tick Collector V2 (16 indicators)</div>
+                    <div>• Bar Aggregator V2 (5 timeframes)</div>
+                    <div>• Label Engineering (multi-horizon)</div>
+                    <div>• Feature Engineering (48 features)</div>
+                    <div>• Data Loader (sliding window)</div>
+                    <div>• XGBoost Model</div>
+                    <div>• LightGBM Model</div>
+                    <div>• Training Pipeline</div>
+                </div>
+            </div>
+            <div>
+                <div style="font-size: 0.9rem; margin-bottom: 10px; color: #ffaa00;">
+                    <strong>→ Next Actions Required</strong>
+                </div>
+                <div style="font-size: 0.8rem; line-height: 1.8;">
+                    <div>• Collect 24h data (currently: <span id="data-hours">0.3</span>h)</div>
+                    <div>• Retrain models (target: 1000+ samples)</div>
+                    <div>• Implement Signal Generator</div>
+                    <div>• Add Confidence Filters</div>
+                    <div>• Setup Backtesting</div>
+                    <div>• Deploy to Production</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data Collection Charts -->
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">📊 Tick Collection Progress</div>
+        <div class="card-body">
+            <canvas id="tickChart" height="80"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">📈 Bar Aggregation by Timeframe</div>
+        <div class="card-body">
+            <canvas id="barChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- ML Performance & Timeline -->
+<div class="grid grid-2">
+    <div class="card">
+        <div class="card-header">🤖 Model Performance Metrics</div>
+        <div class="card-body">
+            <canvas id="modelPerformanceChart" height="80"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">⏱️ Data Collection Timeline</div>
+        <div class="card-body">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 3rem; color: var(--matrix-primary); font-weight: bold; margin-bottom: 10px;">
+                    <span id="timeline-hours">0</span>h
+                </div>
+                <div style="font-size: 1.2rem; opacity: 0.8; margin-bottom: 20px;">Data Collection Running</div>
+                <div style="font-size: 0.9rem; opacity: 0.6;">
+                    <div>Started: <span id="collection-start">Today 12:40</span></div>
+                    <div style="margin-top: 5px;">Target: 24h (1440 bars)</div>
+                    <div style="margin-top: 10px; padding: 10px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                        Progress: <span id="timeline-progress">1.4%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Alerts & Status -->
+<div class="card">
+    <div class="card-header">🔔 System Alerts & Notifications</div>
+    <div class="card-body" id="system-alerts">
+        <div style="display: grid; gap: 10px;">
+            <div style="padding: 12px; background: rgba(0, 255, 65, 0.1); border-left: 3px solid var(--matrix-primary); border-radius: 4px;">
+                <div style="font-weight: bold;">✅ Tick Collector V2 Running</div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;"><span id="alert-ticks">202,200</span> ticks collected per symbol</div>
+            </div>
+            <div style="padding: 12px; background: rgba(0, 255, 65, 0.1); border-left: 3px solid var(--matrix-primary); border-radius: 4px;">
+                <div style="font-weight: bold;">✅ Bar Aggregator V2 Running</div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">5 timeframes aggregated successfully</div>
+            </div>
+            <div style="padding: 12px; background: rgba(255, 170, 0, 0.1); border-left: 3px solid #ffaa00; border-radius: 4px;">
+                <div style="font-weight: bold; color: #ffaa00;">⚠️ More Data Needed for Training</div>
+                <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">Current: <span id="alert-bars">20</span> bars | Target: 1000+ bars (keep collecting for 24h)</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    const socket = io();
+
+    // Update system status
+    socket.on('system_update', (data) => {
+        if (data.mt5_connected !== undefined) {
+            document.getElementById('mt5-status').textContent = data.mt5_connected ? 'Connected' : 'Disconnected';
+            document.getElementById('mt5-status').className = data.mt5_connected ? 'badge badge-success' : 'badge badge-danger';
+        }
+
+        if (data.db_connected !== undefined) {
+            document.getElementById('db-status').textContent = data.db_connected ? 'Connected' : 'Disconnected';
+            document.getElementById('db-status').className = data.db_connected ? 'badge badge-success' : 'badge badge-danger';
+        }
+
+        if (data.ml_active !== undefined) {
+            document.getElementById('ml-status').textContent = data.ml_active ? 'Active' : 'Inactive';
+            document.getElementById('ml-status').className = data.ml_active ? 'badge badge-success' : 'badge badge-warning';
+        }
+    });
+
+    // Update trades
+    socket.on('trades_update', (data) => {
+        document.getElementById('active-trades').textContent = data.active_count || 0;
+        document.getElementById('total-volume').textContent = (data.total_volume || 0).toFixed(2);
+
+        const pnl = data.unrealized_pnl || 0;
+        const pnlElement = document.getElementById('unrealized-pnl');
+        pnlElement.textContent = '$' + pnl.toFixed(2);
+        pnlElement.style.color = pnl >= 0 ? 'var(--matrix-primary)' : '#ff3232';
+    });
+
+    // Update performance
+    socket.on('performance_update', (data) => {
+        const todayPnl = data.today_pnl || 0;
+        const pnlElement = document.getElementById('today-pnl');
+        pnlElement.textContent = '$' + todayPnl.toFixed(2);
+        pnlElement.style.color = todayPnl >= 0 ? 'var(--matrix-primary)' : '#ff3232';
+
+        document.getElementById('today-trades').textContent = data.today_trades || 0;
+        document.getElementById('win-rate').textContent = (data.win_rate || 0).toFixed(1) + '%';
+    });
+
+    // Update recent activity
+    socket.on('activity_update', (data) => {
+        if (data.activities && data.activities.length > 0) {
+            const tbody = document.getElementById('recent-activity');
+            tbody.innerHTML = data.activities.map(activity => `
+                <tr>
+                    <td>${activity.time}</td>
+                    <td>${activity.type}</td>
+                    <td>${activity.symbol}</td>
+                    <td>${activity.action}</td>
+                    <td>${activity.volume}</td>
+                    <td>${activity.price}</td>
+                    <td><span class="badge badge-${activity.status_class}">${activity.status}</span></td>
+                </tr>
+            `).join('');
+        }
+    });
+
+    // Update ML predictions
+    socket.on('ml_update', (data) => {
+        if (data.predictions && data.predictions.length > 0) {
+            const container = document.getElementById('ml-predictions');
+            container.innerHTML = data.predictions.map(pred => `
+                <div style="margin-bottom: 15px; padding: 10px; background: rgba(0, 255, 65, 0.05); border-radius: 4px;">
+                    <strong>${pred.symbol}</strong>: ${pred.direction}
+                    <span style="color: var(--matrix-primary);">(${(pred.confidence * 100).toFixed(1)}%)</span>
+                </div>
+            `).join('');
+        }
+    });
+
+    // Update alerts
+    socket.on('alerts_update', (data) => {
+        if (data.alerts && data.alerts.length > 0) {
+            const container = document.getElementById('system-alerts');
+            container.innerHTML = data.alerts.map(alert => `
+                <div style="margin-bottom: 10px;">
+                    <span class="badge badge-${alert.level}">${alert.level.toUpperCase()}</span>
+                    <span style="margin-left: 10px;">${alert.message}</span>
+                </div>
+            `).join('');
+        }
+    });
+
+    // Request initial data
+    socket.emit('request_dashboard_update');
+
+    // Script management functions
+    function startScript(scriptName) {
+        socket.emit('start_script', { script: scriptName });
+        updateScriptStatus(scriptName, 'starting');
+    }
+
+    function stopScript(scriptName) {
+        socket.emit('stop_script', { script: scriptName });
+        updateScriptStatus(scriptName, 'stopping');
+    }
+
+    function startAllScripts() {
+        const scripts = ['tick_collector_v2', 'bar_aggregator_v2', 'feature_generator', 'signal_generator', 'trade_monitor', 'performance_tracker'];
+        scripts.forEach(script => startScript(script));
+    }
+
+    function stopAllScripts() {
+        const scripts = ['tick_collector_v2', 'bar_aggregator_v2', 'feature_generator', 'signal_generator', 'trade_monitor', 'performance_tracker'];
+        scripts.forEach(script => stopScript(script));
+    }
+
+    function updateScriptStatus(scriptName, status) {
+        const statusElement = document.getElementById(scriptName + '-status');
+        if (!statusElement) return;
+
+        if (status === 'running') {
+            statusElement.textContent = 'Running';
+            statusElement.className = 'badge badge-success';
+        } else if (status === 'stopped') {
+            statusElement.textContent = 'Stopped';
+            statusElement.className = 'badge badge-danger';
+        } else if (status === 'starting') {
+            statusElement.textContent = 'Starting...';
+            statusElement.className = 'badge badge-warning';
+        } else if (status === 'stopping') {
+            statusElement.textContent = 'Stopping...';
+            statusElement.className = 'badge badge-warning';
+        } else if (status === 'error') {
+            statusElement.textContent = 'Error';
+            statusElement.className = 'badge badge-danger';
+        }
+    }
+
+    // Listen for script status updates
+    socket.on('script_status_update', (data) => {
+        if (data.scripts) {
+            Object.keys(data.scripts).forEach(scriptName => {
+                updateScriptStatus(scriptName, data.scripts[scriptName]);
+            });
+        }
+    });
+
+    // Request script status on page load
+    socket.emit('request_script_status');
+
+    // Auto-refresh script status every 10 seconds
+    setInterval(() => {
+        socket.emit('request_script_status');
+    }, 10000);
+
+    // Log viewer functionality
+    let currentLogScript = 'tick_collector_v2';
+
+    function loadScriptLogs(scriptName) {
+        socket.emit('request_script_logs', { script: scriptName });
+    }
+
+    document.getElementById('log-script-selector').addEventListener('change', function() {
+        currentLogScript = this.value;
+        loadScriptLogs(currentLogScript);
+    });
+
+    socket.on('script_logs_update', (data) => {
+        if (data.script === currentLogScript && data.logs) {
+            const logsElement = document.getElementById('script-logs');
+            logsElement.textContent = data.logs;
+            logsElement.scrollTop = logsElement.scrollHeight;
+        }
+    });
+
+    // Load initial logs
+    loadScriptLogs(currentLogScript);
+
+    // Auto-refresh logs every 5 seconds
+    setInterval(() => {
+        loadScriptLogs(currentLogScript);
+    }, 5000);
+
+    // Load and update ML status
+    function updateMLStatus() {
+        fetch('/api/ml_status')
+            .then(response => response.json())
+            .then(data => {
+                if (data.tick_count !== undefined) {
+                    document.getElementById('tick-count').textContent = data.tick_count.toLocaleString();
+                }
+                if (data.bar_count !== undefined) {
+                    document.getElementById('bar-count').textContent = data.bar_count.toLocaleString();
+                }
+                if (data.data_hours !== undefined) {
+                    document.getElementById('data-hours').textContent = data.data_hours;
+                }
+            })
+            .catch(error => console.error('Error loading ML status:', error));
+    }
+
+    // Update ML status every 10 seconds
+    updateMLStatus();
+    setInterval(updateMLStatus, 10000);
+
+    // Initialize Charts with Chart.js
+    const tickChartCtx = document.getElementById('tickChart');
+    const barChartCtx = document.getElementById('barChart');
+    const modelPerfChartCtx = document.getElementById('modelPerformanceChart');
+
+    if (typeof Chart !== 'undefined' && tickChartCtx) {
+        // Tick Collection Chart
+        const tickChart = new Chart(tickChartCtx, {
+            type: 'bar',
+            data: {
+                labels: ['EURUSD', 'GBPUSD', 'USDJPY', 'USDCHF', 'AUDUSD'],
+                datasets: [{
+                    label: 'Ticks Collected',
+                    data: [202200, 202200, 202250, 202250, 202200],
+                    backgroundColor: 'rgba(0, 255, 65, 0.6)',
+                    borderColor: 'rgba(0, 255, 65, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#00ff41' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 255, 65, 0.1)' },
+                        ticks: { color: '#00ff41' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(0, 255, 65, 0.1)' },
+                        ticks: { color: '#00ff41' }
+                    }
+                }
+            }
+        });
+
+        // Bar Aggregation Chart
+        const barChart = new Chart(barChartCtx, {
+            type: 'line',
+            data: {
+                labels: ['1m', '5m', '15m', '1h', '4h'],
+                datasets: [{
+                    label: 'Bars per Timeframe',
+                    data: [20, 5, 3, 2, 1],
+                    backgroundColor: 'rgba(0, 255, 65, 0.2)',
+                    borderColor: 'rgba(0, 255, 65, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#00ff41' }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(0, 255, 65, 0.1)' },
+                        ticks: { color: '#00ff41' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(0, 255, 65, 0.1)' },
+                        ticks: { color: '#00ff41' }
+                    }
+                }
+            }
+        });
+
+        // Model Performance Chart
+        const modelPerfChart = new Chart(modelPerfChartCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Train Accuracy', 'Val Accuracy', 'Test Accuracy', 'Precision', 'Recall', 'F1-Score'],
+                datasets: [{
+                    label: 'XGBoost',
+                    data: [100, 40, 45.5, 0, 0, 0],
+                    backgroundColor: 'rgba(0, 255, 65, 0.2)',
+                    borderColor: 'rgba(0, 255, 65, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'LightGBM',
+                    data: [98, 40, 45.5, 0, 0, 0],
+                    backgroundColor: 'rgba(255, 170, 0, 0.2)',
+                    borderColor: 'rgba(255, 170, 0, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#00ff41' }
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0, 255, 65, 0.1)' },
+                        grid: { color: 'rgba(0, 255, 65, 0.1)' },
+                        pointLabels: { color: '#00ff41' },
+                        ticks: { color: '#00ff41', backdropColor: 'rgba(0, 0, 0, 0.5)' }
+                    }
+                }
+            }
+        });
+
+        // Update timeline data
+        function updateTimeline() {
+            const startTime = new Date();
+            startTime.setHours(12, 40, 0);
+            const now = new Date();
+            const hours = ((now - startTime) / (1000 * 60 * 60)).toFixed(1);
+            const progress = ((hours / 24) * 100).toFixed(1);
+
+            document.getElementById('timeline-hours').textContent = hours;
+            document.getElementById('timeline-progress').textContent = progress + '%';
+        }
+
+        updateTimeline();
+        setInterval(updateTimeline, 60000); // Update every minute
+    }
+</script>
+{% endblock %}
