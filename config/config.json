@@ -12,13 +12,13 @@
         "remote": {
             "host": "212.132.105.198",
             "port": 5432,
-            "database": "postgres",
+            "database": "trading_db",
             "user": "mt5user",
             "password": "1234",
             "pool_size": 3,
             "max_overflow": 5
         },
-        "active": "local"
+        "active": "remote"
     },
     "data": {
         "symbols": ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD"],

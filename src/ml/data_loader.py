@@ -36,7 +36,7 @@ class DataLoader:
         """
         self.lookback_window = lookback_window
         self.label_engineer = LabelEngineer(pip_value, min_profit_pips)
-        self.db = get_database('local')
+        self.db = get_database('remote')  # Geändert auf 'remote' für trading_db
 
     def load_bar_data(
         self,
